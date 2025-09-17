@@ -29,7 +29,7 @@ Firefly is a versatile tool for interpreting multi-wavelength observations of no
 
 Firefly has been standardized and validated against other afterglow codes, including:  
 
-- [BoxFit](https://cosmo.nyu.edu/afterglowlibrary/boxfit)  
+- [BoxFit](https://cosmo.nyu.edu/afterglowlibrary/boxfit2011.html))  
 - [pyafterglow](https://github.com/afterglowpy/afterglowpy)  
 - [JetSimPy](https://github.com/your-org/jetsimpy)  
 
