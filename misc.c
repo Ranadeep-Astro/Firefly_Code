@@ -86,9 +86,25 @@ double get_w( int i , struct lightcurve * lc ){
    double wp = lc->skp;
 
    double x = ((double)i+.5)/Nt;
+   //double w = pow( wp/wm , x) * wm;
    double w = x*(wp - wm) + wm;
 
    return( w*(lc->r0) );
+
+}
+
+
+double get_wy( int i , struct lightcurve * lc ){
+
+   double Nt = (double)lc->Nt;
+   double wym = lc->skym;
+   double wyp = lc->skyp;
+
+   double x = ((double)i+.5)/Nt;
+   //double wy = pow( wyp/wym , x) * wym;
+   double wy = x*(wyp - wym) + wym;
+
+   return( wy*(lc->r0) );
 
 }
 
@@ -149,10 +165,30 @@ int get_wi( double w , struct lightcurve * lc ){
    double Nt = (double)lc->Nt;
 
    double x = ((w-wm)/(wp-wm));
+   //double x = log( w / wm) / log( wp / wm );
 
    int i = (int) (Nt*x);
    if( w < wm || x < 0.0 ) i = -1;
    if( w > wp || x > 1.0 ) i = Nt;
+   //printf("\nHERE IN WI wm = %e, wp = %e, w = %e\n",wm,wp,w);
+   //printf("x = %e, i = %d\n", x,i);
+
+   return(i);
+
+}
+
+int get_wyi( double wy , struct lightcurve * lc ){
+
+   double wym = lc->skym;
+   double wyp = lc->skyp;
+   double Nt = (double)lc->Nt;
+
+   double x = ((wy-wym)/(wyp-wym));
+   //double x = log( wy / wym) / log( wyp / wym );
+
+   int i = (int) (Nt*x);
+   if( wy < wym || x < 0.0 ) i = -1;
+   if( wy > wyp || x > 1.0 ) i = Nt;
    //printf("\nHERE IN WI wm = %e, wp = %e, w = %e\n",wm,wp,w);
    //printf("x = %e, i = %d\n", x,i);
 
@@ -186,6 +222,7 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    int Nt = theList->Num_Obs;
    lc->Nt = Nt;
    lc->F = (double *) calloc( Nt , sizeof(double) );
+   lc->F_sky = (double *) calloc( Nt * Nt , sizeof(double) );
    lc->tm = theList->tobs_min*day/t0;
    lc->tp = theList->tobs_max*day/t0;
 
@@ -193,6 +230,8 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    lc->nup = theList->frequency_max*(1.+z);
    lc->skm = theList->skySpan_min/r0;
    lc->skp = theList->skySpan_max/r0;
+   lc->skym = theList->skySpan_Y_min/r0;
+   lc->skyp = theList->skySpan_Y_max/r0;
    printf("\nskm = %e; skp = %e\n",lc->skm,lc->skp);
    lc->ti = theList->tobs_min*day/t0;
    lc->nu = theList->frequency_min*(1.+z);
@@ -253,7 +292,7 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    fprintf(outFile,"epsilon_B = %e\n",theList->eps_B);
    fprintf(outFile,"p = %e\n",theList->synch_p);
    fprintf(outFile,"**********####################***********\n");
-   fprintf(outFile,"\nTime(days)  Frequency(Hz)  Flux(mJy)  Sky Loc(cm)\n");
+   fprintf(outFile,"\nTime(days)  Frequency(Hz)  Flux(mJy)  Sky Loc(cm)  Sky Height(cm)\n");
    
    }
    lc->Ndiv_th = theList->Ndiv_theta;
@@ -262,6 +301,7 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
 
 void free_lightcurve( struct lightcurve * lc ){
    if( lc->F ) free( lc->F );
+   if( lc->F_sky ) free( lc-> F_sky );
 }
 
 void output_lc( char * fname , struct lightcurve * lc ){
@@ -298,16 +338,23 @@ void output_skyLoc( char * fname , struct lightcurve * lc ){
    FILE * outFile = fopen(fname,"a");
    int Nt = lc->Nt;
    double z = lc->z;
-   int i;
+   int i, j;
    double t0 = lc->t0;			//Days
    double r0 = lc->r0;			//cm
    double mJy = 1e26;			//miliJy
    double day   = 86400.;		//seconds
    double R2  = pow( lc->dL , 2. );
+   //fprintf(outFile,"\n -----********************-----\n");
    for( i=0 ; i<Nt ; ++i ){
-      double w = get_w( i, lc );	//cm
-      fprintf(outFile,"%e %e %e %e\n",lc->ti*t0,lc->nu,lc->F[i]*mJy/R2/(1.0+z),w);
-   }
+      double w = get_w( i, lc );      //cm
+      for( j=0 ; j<Nt ; ++j){
+        double wy = get_wy( j, lc );        //cm
+        fprintf(outFile,"%e %e %e %e %e\n",lc->ti*t0,lc->nu,lc->F_sky[ Nt * j + i],w,wy);
+	//int iobs = get_wi( w/r0 , lc );
+        //int iobsy = get_wyi( wy/r0 , lc );
+	//printf("\nWhile Printing...\nw = %e; wy = %e; wi = %d; i = %d; wyj = %d; j = %d;  ti = %e; F = %e\n", w,wy,iobs,i,iobsy,j,lc->ti,lc->F_sky[lc->Nt * j + i]);
+      }
+      }
    fclose(outFile);
 }
 

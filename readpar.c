@@ -70,9 +70,11 @@ int read_par_file( struct par_list * theList ){
          err += readvar( pfile , "checkpoint_step"    , VAR_INT  , &(theList->checkpoint_step)    );
          err += readvar( pfile , "tobs_min"           , VAR_DOUB , &(theList->tobs_min)           );
          err += readvar( pfile , "tobs_max"           , VAR_DOUB , &(theList->tobs_max)           );
-         err += readvar( pfile , "skySpan_min"        , VAR_DOUB , &(theList->skySpan_min)           );
-         err += readvar( pfile , "skySpan_max"        , VAR_DOUB , &(theList->skySpan_max)           );
-         err += readvar( pfile , "Num_Obs"            , VAR_INT  , &(theList->Num_Obs)            );
+         err += readvar( pfile , "skySpan_min"        , VAR_DOUB , &(theList->skySpan_min)        );
+         err += readvar( pfile , "skySpan_max"        , VAR_DOUB , &(theList->skySpan_max)        );
+         err += readvar( pfile , "skySpan_Y_min"      , VAR_DOUB , &(theList->skySpan_Y_min)      );
+         err += readvar( pfile , "skySpan_Y_max"      , VAR_DOUB , &(theList->skySpan_Y_max)      );
+	 err += readvar( pfile , "Num_Obs"            , VAR_INT  , &(theList->Num_Obs)            );
          err += readvar( pfile , "frequency_min"      , VAR_DOUB , &(theList->frequency_min)      );
          err += readvar( pfile , "frequency_max"      , VAR_DOUB , &(theList->frequency_max)      );
          err += readvar( pfile , "Adiabatic_Index"    , VAR_DOUB , &(theList->gamma_law)          );

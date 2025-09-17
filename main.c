@@ -52,8 +52,17 @@ int main( int argc , char * argv[] ){
 
    double F[Nt];
    MPI_Allreduce( lc.F , F , Nt , MPI_DOUBLE , MPI_SUM , MPI_COMM_WORLD );
-   int i;
-   for( i=0 ; i<Nt ; ++i ) lc.F[i] = F[i];
+   //int i;
+   //for( i=0 ; i<Nt ; ++i ) lc.F[i] = F[i];
+   double F_sky[Nt * Nt];
+   MPI_Allreduce( lc.F_sky , F_sky , Nt*Nt , MPI_DOUBLE , MPI_SUM , MPI_COMM_WORLD );
+   int i,j;
+   for( i=0 ; i<Nt ; ++i ){
+      lc.F[i] = F[i];
+      for( j=0 ; j<Nt ; ++j){
+         lc.F_sky[ Nt * j + i] = F_sky[ Nt * j + i];
+	   }
+   }
  
    if( rank==0 && theList.to_do==0) output_lc( theList.output_filename , &lc );
    if( rank==0 && theList.to_do==1) output_spec( theList.output_filename , &lc );

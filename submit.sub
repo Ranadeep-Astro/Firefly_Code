@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#SBATCH  --job-name=sky_lin
+
+#SBATCH  --nodes=1
+#SBATCH  --ntasks=20
+#SBATCH  --cpus-per-task=1
+#SBATCH  --time=144:00:00
+#SBATCH  --partition=petunialong
+
+time mpirun -np 20 ./glow

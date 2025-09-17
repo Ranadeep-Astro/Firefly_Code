@@ -12,8 +12,8 @@ struct par_list{
    int Ndiv_theta, Ndiv_phi;
    double tobs_min;
    double tobs_max;
-   double skySpan_min;
-   double skySpan_max;
+   double skySpan_min, skySpan_max;
+   double skySpan_Y_min, skySpan_Y_max;
    int Num_Obs;
    double frequency_min;
    double frequency_max;
@@ -32,8 +32,8 @@ struct directory{
 
 struct lightcurve{
 
-   double * F;
-   double tm,tp,num,nup,skm,skp;
+   double * F, * F_sky;
+   double tm,tp,num,nup,skm,skp,skym,skyp;
    double nu,ti;
    int Nt, Ndiv_th,Ndiv_ph;
    double th_obs;

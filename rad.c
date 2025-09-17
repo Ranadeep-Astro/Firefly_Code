@@ -12,6 +12,7 @@ void fill_zone_data( int , int , int , double * , struct JetGrid * , int *);
 
 int get_i( double , struct lightcurve * );
 int get_wi( double , struct lightcurve * );
+int get_wyi( double , struct lightcurve * );
 double get_nu( int , struct lightcurve * );
 double get_dtobs( int , struct lightcurve * );
 
@@ -167,7 +168,7 @@ double get_tobs( double * theZone , int Nq , double t , double th_obs ){
 
 }
 
-double get_SkyLoc( double * theZone , int Nq , double th_obs ){
+double get_SkyLoc( double * theZone , int Nq , double th_obs , double tobs ){
 
    double rm  = theZone[Nq];
    double rp  = theZone[Nq+1];
@@ -183,8 +184,27 @@ double get_SkyLoc( double * theZone , int Nq , double th_obs ){
    double w2 = r*sin(th)*cos(ph)*cos(th_obs);
 
    double w = w1 - w2;
-   
+   //printf("\nr = %e; th = %e; ph = %e; w = %e; t_obs = %e\n", r,th,ph,w,tobs);
    return( w );
+
+}
+
+double get_SkyLoc_Y( double * theZone , int Nq , double th_obs ){
+
+   double rm  = theZone[Nq];
+   double rp  = theZone[Nq+1];
+   double thm = theZone[Nq+2];
+   double thp = theZone[Nq+3];
+   double phm = theZone[Nq+4];
+   double php = theZone[Nq+5];
+   double r = .5*(rm+rp);
+   double th = .5*(thm+thp);
+   double ph = .5*(phm+php);
+
+   double wy = r*sin(th)*sin(ph);
+   //printf("r = %e; th = %e; ph = %e; wy = %e\n", r, th, ph ,wy);
+
+   return( wy );
 
 }
 
@@ -221,11 +241,19 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                for( kk=0 ; kk<NpDiv; ++kk){
                   int ZoneDiv[4] = {jj,kk,NtDiv,NpDiv};
                   fill_zone_data( i , j , k , theZone , &theGrid , ZoneDiv );
-                  double t_obs = get_tobs( theZone , Nq , t , lc->th_obs );
-                  double w = get_SkyLoc(theZone , Nq , lc->th_obs);  //get sky length w.r.t observer  
-                  double thm = theZone[Nq+2];
+		  double rm  = theZone[Nq];
+   		  double rp  = theZone[Nq+1];
+   		  double thm = theZone[Nq+2];
    		  double thp = theZone[Nq+3];
-		  double th = .5*(thm+thp);
+   		  double phm = theZone[Nq+4];
+   		  double php = theZone[Nq+5];
+   		  double r = .5*(rm+rp);
+   		  double th = .5*(thm+thp);
+   		  double ph = .5*(phm+php);
+
+                  double t_obs = get_tobs( theZone , Nq , t , lc->th_obs );
+                  double w = get_SkyLoc(theZone , Nq , lc->th_obs, t_obs);  //get sky length w.r.t observer  
+                  double wy = get_SkyLoc_Y(theZone , Nq , lc->th_obs);  //get sky height w.r.t observer
 		  if(theList->to_do == 0){                  
                   int iobs = get_i( t_obs , lc );
                   //printf("t_obs = %e, i = %d\n", t_obs,iobs);
@@ -266,14 +294,17 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                     if( (t_obs < (lc->ti)+dt_obs) && (t_obs > (lc->ti)-dt_obs) ){
                         //printf("\nAm I here in to do????? Rank = %d, file = %s, w = %e\n",rank,fname,w);
                         int iobs = get_wi( w , lc );
+			int iobsy = get_wyi( wy , lc );
                         //printf("\n iobs = %d \n",iobs);
-                        if( iobs > -1 && iobs < lc->Nt ){
+                        if( iobs > -1 && iobs < lc->Nt && iobsy > -1 && iobsy < lc-Nt){
                            double dop = get_doppler( theZone , Nq , lc->th_obs );
                      	    double t_c = time_dilate( theZone , t );
                      	    double eps = get_emissivity( theZone , lc , dop*(lc->nu) , t_c , theList );
                      	    double dV = get_dV( theZone , Nq , lc->r0 );
                      	    //printf("\ndV = %e eps = %e dt = %e dt_obs = %e\n",dV,eps,dt,dt_obs);
-                     	    lc->F[iobs] += dV*eps*dt/dt_obs/dop/dop;
+                     	    //lc->F_sky[ lc->Nt * iobsy + iobs] += ((rp - rm)/4.*M_PI)*eps*dt/dt_obs/dop/dop;
+			    lc->F_sky[ lc->Nt * iobsy + iobs] += dV*eps*dt/dt_obs/dop/dop;
+			    //printf("\nr = %e; w = %e; wy = %e; wi = %d; wyj = %d;  ti = %e;  t_obs = %e; t_code = %e; F = %e\n", r,w,wy,iobs,iobsy,lc->ti,t_obs,t,lc->F_sky[lc->Nt * iobsy + iobs]);
                          }
                        }                     
                       }
