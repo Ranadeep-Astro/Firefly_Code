@@ -43,9 +43,9 @@ Firefly has been standardized and validated against other afterglow codes, inclu
 
 Firefly has already been used extensively to study multimessenger and transient events such as:  
 
-- **GRB 170817A** (binary neutron star merger)  
-- **PTF10tqv**  
-- **EP241021A**  
+- [**GRB 170817A**](https://iopscience.iop.org/article/10.3847/1538-4357/ad86bf) (binary neutron star merger)  
+- [**PTF10tqv**](https://arxiv.org/abs/2507.15928)  
+- [**EP241021A**](https://iopscience.iop.org/article/10.3847/2041-8213/ade870)
 - Other transients detected by the **Palomar Transient Factory** and **Einstein Probe**  
 
 ---
