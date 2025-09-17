@@ -2,9 +2,13 @@
 
 **Firefly** is a publicly available synchrotron radiation code designed for modeling afterglows of high-energy astrophysical transients.  
 
-The synchrotron physics implemented is based on the standard afterglow theory of **Sari, Piran & Narayan (1998)**. Firefly takes a **hydrodynamically evolved astrophysical outflow** and post-processes it to generate simulated observations. The version available here includes pre-existing outputs for a **short gamma-ray burst (sGRB) jet** generated using *The Jet Code*.  
+The synchrotron physics implemented is based on the standard afterglow theory of  
+[Sari, Piran & Narayan (1998)](https://doi.org/10.1086/311269).  
+Firefly takes a **hydrodynamically evolved astrophysical outflow** and post-processes it to generate simulated observations.  
+The version available here includes pre-existing outputs for a **short gamma-ray burst (sGRB) jet** generated using *The Jet Code*.  
 
-Firefly can simulate both **on-axis and off-axis emission** from structured astrophysical outflows, including relativistic jets, across the entire electromagnetic spectrum. With Firefly, you can generate:  
+Firefly can simulate both **on-axis and off-axis emission** from structured astrophysical outflows, including relativistic jets, across the entire electromagnetic spectrum.  
+With Firefly, you can generate:  
 
 - 📈 Multi-wavelength light curves  
 - 🌌 Spectra across radio → X-ray  
@@ -29,9 +33,9 @@ Firefly is a versatile tool for interpreting multi-wavelength observations of no
 
 Firefly has been standardized and validated against other afterglow codes, including:  
 
-- [BoxFit](https://cosmo.nyu.edu/afterglowlibrary/boxfit2011.html))  
-- [pyafterglow](https://github.com/afterglowpy/afterglowpy)  
-- [JetSimPy](https://github.com/your-org/jetsimpy)  
+- [BoxFit](https://doi.org/10.1088/0004-637X/751/2/155) (van Eerten & MacFadyen 2012)  
+- [pyafterglow / Afterglowpy](https://doi.org/10.3847/1538-4357/ab91b8) (Ryan et al. 2020)  
+- [JetSimPy](https://ui.adsabs.harvard.edu/abs/2023ApJ...945...60N) (Nava et al. 2023)  
 
 ---
 
