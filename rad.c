@@ -204,7 +204,7 @@ double get_SkyLoc_Y( double * theZone , int Nq , double th_obs ){
    double wy = r*sin(th)*sin(ph);
    //printf("r = %e; th = %e; ph = %e; wy = %e\n", r, th, ph ,wy);
 
-   return( wy );
+   return( -1.0*wy );
 
 }
 
@@ -254,6 +254,9 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                   double t_obs = get_tobs( theZone , Nq , t , lc->th_obs );
                   double w = get_SkyLoc(theZone , Nq , lc->th_obs, t_obs);  //get sky length w.r.t observer  
                   double wy = get_SkyLoc_Y(theZone , Nq , lc->th_obs);  //get sky height w.r.t observer
+		  double Da = lc->dL/lc->r0/(1. + lc->z)/(1. + lc->z);
+		  double w_ang = w/Da;
+		  double wy_ang = wy/Da;
 		  if(theList->to_do == 0){                  
                   int iobs = get_i( t_obs , lc );
                   //printf("t_obs = %e, i = %d\n", t_obs,iobs);
@@ -293,8 +296,8 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                   else if(theList->to_do == 2){
                     if( (t_obs < (lc->ti)+dt_obs) && (t_obs > (lc->ti)-dt_obs) ){
                         //printf("\nAm I here in to do????? Rank = %d, file = %s, w = %e\n",rank,fname,w);
-                        int iobs = get_wi( w , lc );
-			int iobsy = get_wyi( wy , lc );
+                        int iobs = get_wi( w_ang , lc );
+			int iobsy = get_wyi( wy_ang , lc );
                         //printf("\n iobs = %d \n",iobs);
                         if( iobs > -1 && iobs < lc->Nt && iobsy > -1 && iobsy < lc-Nt){
                            double dop = get_doppler( theZone , Nq , lc->th_obs );
@@ -304,7 +307,7 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                      	    //printf("\ndV = %e eps = %e dt = %e dt_obs = %e\n",dV,eps,dt,dt_obs);
                      	    //lc->F_sky[ lc->Nt * iobsy + iobs] += ((rp - rm)/4.*M_PI)*eps*dt/dt_obs/dop/dop;
 			    lc->F_sky[ lc->Nt * iobsy + iobs] += dV*eps*dt/dt_obs/dop/dop;
-			    //printf("\nr = %e; w = %e; wy = %e; wi = %d; wyj = %d;  ti = %e;  t_obs = %e; t_code = %e; F = %e\n", r,w,wy,iobs,iobsy,lc->ti,t_obs,t,lc->F_sky[lc->Nt * iobsy + iobs]);
+			    printf("\nr = %e; w = %e; wy = %e; wi = %d; wyj = %d; w_max = %e; wy_max = %e;  ti = %e;  t_obs = %e; t_code = %e; F = %e\n", r,w,wy,iobs,iobsy,w_ang,wy_ang,lc->ti,t_obs,t,lc->F_sky[lc->Nt * iobsy + iobs]);
                          }
                        }                     
                       }

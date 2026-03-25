@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH  --job-name=sky_lin
+#SBATCH  --job-name=Plateau2
 
 #SBATCH  --nodes=1
 #SBATCH  --ntasks=20
@@ -9,3 +9,4 @@
 #SBATCH  --partition=petunialong
 
 time mpirun -np 20 ./glow
+#time python3 surface_plot_parallel.py 50

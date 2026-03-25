@@ -75,7 +75,7 @@ double get_t( int i , struct lightcurve * lc ){
    double x = ((double)i+.5)/Nt;
    double t = pow( tp/tm , x ) * tm;
 
-   return( t*(lc->t0) );
+   return( t*(lc->t0)*(1.0 + lc->z) );
 
 }
 
@@ -89,7 +89,7 @@ double get_w( int i , struct lightcurve * lc ){
    //double w = pow( wp/wm , x) * wm;
    double w = x*(wp - wm) + wm;
 
-   return( w*(lc->r0) );
+   return( w );
 
 }
 
@@ -104,7 +104,7 @@ double get_wy( int i , struct lightcurve * lc ){
    //double wy = pow( wyp/wym , x) * wym;
    double wy = x*(wyp - wym) + wym;
 
-   return( wy*(lc->r0) );
+   return( wy );
 
 }
 
@@ -122,7 +122,7 @@ double get_nu( int i , struct lightcurve * lc ){
    double nu = pow( nup/num , x ) * num;
    //printf("I don't think this is the issue, nu = %e Nt = %e\n",nu, Nt);
 
-   return( nu );
+   return( nu/(1.0 + lc->z) );
 
 }
 
@@ -203,12 +203,13 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    double mp    = 1.67262178e-24;	//grams
    double c     = 2.99792458e10;	//cm/s
    double day   = 86400.;		//seconds
+   double masrad = 4.8481368110954e-9;	//mas to radians
  
    double e0   = Bethe*theList->E_iso;
    double rho0 = mp*theList->n_ism;
    double r0 = pow( e0/rho0/c/c , 1./3. );
    double z = theList->redshift;
-   double t0 = r0/c*(1.+z);
+   double t0 = r0/c*(1. + z);
    char * fname = theList->output_filename;
    FILE * outFile = fopen(fname,"w");
 
@@ -223,32 +224,37 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    lc->Nt = Nt;
    lc->F = (double *) calloc( Nt , sizeof(double) );
    lc->F_sky = (double *) calloc( Nt * Nt , sizeof(double) );
-   lc->tm = theList->tobs_min*day/t0;
-   lc->tp = theList->tobs_max*day/t0;
+   lc->tm = theList->tobs_min*day/t0/(1.+z);
+   lc->tp = theList->tobs_max*day/t0/(1.+z);
 
    lc->num = theList->frequency_min*(1.+z);
    lc->nup = theList->frequency_max*(1.+z);
-   lc->skm = theList->skySpan_min/r0;
-   lc->skp = theList->skySpan_max/r0;
-   lc->skym = theList->skySpan_Y_min/r0;
-   lc->skyp = theList->skySpan_Y_max/r0;
+   //lc->skm = theList->skySpan_min/r0;
+   //lc->skp = theList->skySpan_max/r0;
+   //lc->skym = theList->skySpan_Y_min/r0;
+   //lc->skyp = theList->skySpan_Y_max/r0;
+   lc->skm = theList->skySpan_min*masrad;
+   lc->skp = theList->skySpan_max*masrad;
+   lc->skym = theList->skySpan_Y_min*masrad;
+   lc->skyp = theList->skySpan_Y_max*masrad;
    printf("\nskm = %e; skp = %e\n",lc->skm,lc->skp);
-   lc->ti = theList->tobs_min*day/t0;
+   lc->ti = theList->tobs_min*day/t0/(1.+z);
    lc->nu = theList->frequency_min*(1.+z);
    lc->dL = theList->luminosity_distance;
    lc->th_obs = theList->th_obs;
    if(theList->to_do == 0){
    printf("\n#########  CALCULATING LIGHTCURVE  #########\n");
    printf("\nFrequency = %e Hz\n", lc->nu);
-   printf("\nStart time = %e sec\n",lc->tm*t0);
-   printf("\nEnd time = %e sec\n",lc->tp*t0);
+   printf("\nStart time = %e sec\n",lc->tm*t0*(1.+z));
+   printf("\nEnd time = %e sec\n",lc->tp*t0*(1.+z));
    fprintf(outFile,"#########  CALCULATING LIGHTCURVE  #########\n");
-   fprintf(outFile,"Frequency = %e Hz\n", lc->nu);
-   fprintf(outFile,"Start time = %e days\n",lc->tm);
-   fprintf(outFile,"End time = %e days\n",lc->tp);
+   fprintf(outFile,"Frequency = %e Hz\n", lc->nu/(1.+z));
+   fprintf(outFile,"Start time = %e days\n",lc->tm*lc->t0*(1.+z));
+   fprintf(outFile,"End time = %e days\n",lc->tp*lc->t0*(1.+z));
    fprintf(outFile,"E_iso = %e erg\n",lc->E0);
    fprintf(outFile,"n_ism = %e\n",theList->n_ism);
    fprintf(outFile,"Luminosity Distance = %e cm\n",lc->dL);
+   fprintf(outFile,"Gravitational Redshift z = %e\n",lc->z);
    fprintf(outFile,"Observer Angle = %e rad\n",lc->th_obs);
    fprintf(outFile,"epsilon_E = %e\n",theList->eps_E);
    fprintf(outFile,"epsilon_B = %e\n",theList->eps_B);
@@ -258,16 +264,17 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    }
    else if(theList->to_do == 1){
    printf("\n#########  CALCULATING SPECTRUM  #########\n");
-   printf("\nTime (seconds) = %e\n",lc->ti*t0);
-   printf("\nStart Frequency (Hz) = %e\n", lc->num);
-   printf("\nEnd Frequency (Hz) = %e\n", lc->nup);
+   printf("\nTime (seconds) = %e\n",lc->ti*t0*(1.+z));
+   printf("\nStart Frequency (Hz) = %e\n", lc->num/(1.+z));
+   printf("\nEnd Frequency (Hz) = %e\n", lc->nup/(1.+z));
    fprintf(outFile,"#########  CALCULATING SPECTRUM  #########\n");
-   fprintf(outFile,"Time = %e days\n",lc->ti);
-   fprintf(outFile,"Start Frequency = %e Hz\n", lc->num);
-   fprintf(outFile,"End Frequency = %e Hz\n", lc->nup);
+   fprintf(outFile,"Time = %e days\n",lc->ti*t0*(1.+z));
+   fprintf(outFile,"Start Frequency = %e Hz\n", lc->num/(1.+z));
+   fprintf(outFile,"End Frequency = %e Hz\n", lc->nup/(1.+z));
    fprintf(outFile,"E_iso = %e erg\n",lc->E0);
    fprintf(outFile,"n_ism = %e\n",theList->n_ism);
    fprintf(outFile,"Luminosity Distance = %e cm\n",lc->dL);
+   fprintf(outFile,"Gravitational Redshift z = %e\n",lc->z);
    fprintf(outFile,"Observer Angle = %e rad\n",lc->th_obs);
    fprintf(outFile,"epsilon_E = %e\n",theList->eps_E);
    fprintf(outFile,"epsilon_B = %e\n",theList->eps_B);
@@ -278,15 +285,16 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    }
    else if(theList->to_do == 2){
    printf("\n#########  CALCULATING SKY MAP #########\n");
-   printf("\nTime (seconds) = %e\n",lc->ti*t0);
-   fprintf(outFile,"Frequency = %e Hz\n", lc->nu);
-   fprintf(outFile,"#########  CALCULATING  MAP  #########\n");
-   fprintf(outFile,"Time = %e days\n",lc->ti*lc->t0);
+   printf("\nTime (seconds) = %e\n",lc->ti*t0*(1.+z));
+   //fprintf(outfile,"Frequency = %e Hz\n", lc->nu);
+   fprintf(outFile,"#########  CALCULATING SKY MAP  #########\n");
+   fprintf(outFile,"Time = %e days\n",lc->ti*lc->t0*(1.+z));
    fprintf(outFile,"Start Frequency = %e Hz\n", lc->num/(1.+z));
    fprintf(outFile,"End Frequency = %e Hz\n", lc->nup/(1.+z));
    fprintf(outFile,"E_iso = %e erg\n",lc->E0);
    fprintf(outFile,"n_ism = %e\n",theList->n_ism);
    fprintf(outFile,"Luminosity Distance = %e cm\n",lc->dL);
+   fprintf(outFile,"Gravitational Redshift z = %e\n",lc->z);
    fprintf(outFile,"Observer Angle = %e rad\n",lc->th_obs);
    fprintf(outFile,"epsilon_E = %e\n",theList->eps_E);
    fprintf(outFile,"epsilon_B = %e\n",theList->eps_B);
@@ -313,7 +321,7 @@ void output_lc( char * fname , struct lightcurve * lc ){
    double R2  = pow( lc->dL , 2. );
    for( i=0 ; i<Nt ; ++i ){
       double t = get_t( i , lc );
-      fprintf(outFile,"%e %e %e\n",t,lc->nu,lc->F[i]*mJy/R2/(1.0+z));
+      fprintf(outFile,"%e %e %e\n",t,lc->nu/(1.+z),lc->F[i]*mJy/R2/(1.0+z));
    }
    fclose(outFile);
 }
@@ -329,7 +337,7 @@ void output_spec( char * fname , struct lightcurve * lc ){
    double R2  = pow( lc->dL , 2. );
    for( i=0 ; i<Nt ; ++i ){
       double nu = get_nu( i, lc );
-      fprintf(outFile,"%e %e %e\n",lc->ti*t0,nu,lc->F[i]*mJy/R2/(1.0+z));
+      fprintf(outFile,"%e %e %e\n",lc->ti*t0*(1.+z),nu,lc->F[i]*mJy/R2/(1.0+z));
    }
    fclose(outFile);
 }
@@ -343,13 +351,14 @@ void output_skyLoc( char * fname , struct lightcurve * lc ){
    double r0 = lc->r0;			//cm
    double mJy = 1e26;			//miliJy
    double day   = 86400.;		//seconds
+   double radmas = 206264806.2471;					//radiams to mas
    double R2  = pow( lc->dL , 2. );
    //fprintf(outFile,"\n -----********************-----\n");
    for( i=0 ; i<Nt ; ++i ){
       double w = get_w( i, lc );      //cm
       for( j=0 ; j<Nt ; ++j){
         double wy = get_wy( j, lc );        //cm
-        fprintf(outFile,"%e %e %e %e %e\n",lc->ti*t0,lc->nu,lc->F_sky[ Nt * j + i],w,wy);
+        fprintf(outFile,"%e %e %e %e %e\n",lc->ti*t0*(1.+z),lc->nu/(1.+z),lc->F_sky[ Nt * j + i]*mJy/R2/(1.0+z),w*radmas,wy*radmas);
 	//int iobs = get_wi( w/r0 , lc );
         //int iobsy = get_wyi( wy/r0 , lc );
 	//printf("\nWhile Printing...\nw = %e; wy = %e; wi = %d; i = %d; wyj = %d; j = %d;  ti = %e; F = %e\n", w,wy,iobs,i,iobsy,j,lc->ti,lc->F_sky[lc->Nt * j + i]);
