@@ -299,15 +299,15 @@ void add_flux_lc( char * fname , struct lightcurve * lc , double dt , struct par
                         int iobs = get_wi( w_ang , lc );
 			int iobsy = get_wyi( wy_ang , lc );
                         //printf("\n iobs = %d \n",iobs);
-                        if( iobs > -1 && iobs < lc->Nt && iobsy > -1 && iobsy < lc-Nt){
-                           double dop = get_doppler( theZone , Nq , lc->th_obs );
+                        if( iobs > -1 && iobs < lc->Nt && iobsy > -1 && iobsy < lc->Nt){
+                            double dop = get_doppler( theZone , Nq , lc->th_obs );
                      	    double t_c = time_dilate( theZone , t );
                      	    double eps = get_emissivity( theZone , lc , dop*(lc->nu) , t_c , theList );
                      	    double dV = get_dV( theZone , Nq , lc->r0 );
                      	    //printf("\ndV = %e eps = %e dt = %e dt_obs = %e\n",dV,eps,dt,dt_obs);
                      	    //lc->F_sky[ lc->Nt * iobsy + iobs] += ((rp - rm)/4.*M_PI)*eps*dt/dt_obs/dop/dop;
 			    lc->F_sky[ lc->Nt * iobsy + iobs] += dV*eps*dt/dt_obs/dop/dop;
-			    printf("\nr = %e; w = %e; wy = %e; wi = %d; wyj = %d; w_max = %e; wy_max = %e;  ti = %e;  t_obs = %e; t_code = %e; F = %e\n", r,w,wy,iobs,iobsy,w_ang,wy_ang,lc->ti,t_obs,t,lc->F_sky[lc->Nt * iobsy + iobs]);
+			    //printf("\nr = %e; w = %e; wy = %e; wi = %d; wyj = %d; w_max = %e; wy_max = %e;  ti = %e;  t_obs = %e; t_code = %e; F = %e\n", r,w,wy,iobs,iobsy,w_ang,wy_ang,lc->ti,t_obs,t,lc->F_sky[lc->Nt * iobsy + iobs]);
                          }
                        }                     
                       }

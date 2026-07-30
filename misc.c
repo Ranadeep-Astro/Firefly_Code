@@ -209,7 +209,7 @@ void initiate_lightcurve( struct lightcurve * lc , struct par_list * theList ){
    double rho0 = mp*theList->n_ism;
    double r0 = pow( e0/rho0/c/c , 1./3. );
    double z = theList->redshift;
-   double t0 = r0/c*(1. + z);
+   double t0 = r0/c;
    char * fname = theList->output_filename;
    FILE * outFile = fopen(fname,"w");
 

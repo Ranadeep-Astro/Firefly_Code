@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH  --job-name=Plateau2
+#SBATCH  --job-name=fbfrf_4
 
 #SBATCH  --nodes=1
 #SBATCH  --ntasks=20
